@@ -69,5 +69,41 @@ namespace TaskTracker.API.Repositories
         {
             await _db.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<T>> GetAllPagedAsync(
+                System.Linq.Expressions.Expression<Func<T, bool>>? filter = null,
+                string? includeProperties = null,
+                Func<IQueryable<T>, IQueryable<T>>? orderBy = null,
+                int pageNumber = 1,
+                int pageSize = 10
+            )
+        {
+            IQueryable<T> query = dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (!string.IsNullOrEmpty(includeProperties))
+            {
+                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProp);
+                }
+            }
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            // Skip - əvvəlki səhifələrin datalarını ötürür
+            // Take - cari səhifə üçün lazım olan sayda datanı götürür
+            return await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
     }
 }

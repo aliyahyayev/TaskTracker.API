@@ -1,11 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskTracker.API.Data;
 using TaskTracker.API.Repositories;
+using TaskTracker.Exceptions;
 using TaskTracker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 
 // Repository qeydiyyatı (Generic Repository üçün scoped istifadə olunur)
@@ -22,7 +21,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add services to the container.
 var app = builder.Build();
+// Qlobal xəta idarəetmə middleware-i (Hər şeydən əvvəl dayanmalıdır)
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -15,11 +15,12 @@ namespace TaskTracker.Controllers
             _taskService = taskService;
         }
 
+        // GET: api/tasks?search=kod&sortBy=title&sortOrder=desc&pageNumber=1&pageSize=5
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoTaskDto>>> GetAll([FromQuery] string? search) //url den search parametri alırıq
+        public async Task<ActionResult<IEnumerable<TodoTaskDto>>> GetAll([FromQuery] TaskQueryParams queryParams)
         {
-            var tasks = await _taskService.GetAllTasksAsync(search);
-            return Ok(tasks); 
+            var tasks = await _taskService.GetAllTasksAsync(queryParams);
+            return Ok(tasks);
         }
 
         // GET: api/tasks/5 (ID-yə görə tək task gətirmək)

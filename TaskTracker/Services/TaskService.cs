@@ -15,18 +15,39 @@ namespace TaskTracker.Services
             _categoryRepository = categoryRepository;
         }
 
-        public async Task<IEnumerable<TodoTaskDto>> GetAllTasksAsync(string? search = null)
+        public async Task<IEnumerable<TodoTaskDto>> GetAllTasksAsync(TaskQueryParams queryParams)
         {
-            // Taskları gətirərkən aid olduqları Category-ni də Include edirik
-            var tasks = await _taskRepository.GetAllAsync(includeProperties: "Category");
-
-            if (!string.IsNullOrEmpty(search))
+            // filtr (eger varsa)
+            System.Linq.Expressions.Expression<Func<TodoTask, bool>>? filter = null;
+            if (!string.IsNullOrEmpty(queryParams.Search))
             {
-                tasks = tasks.Where(t => t.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                                         t.Description.Contains(search, StringComparison.OrdinalIgnoreCase));
+                filter = t => t.Title.Contains(queryParams.Search, StringComparison.OrdinalIgnoreCase) ||
+                             t.Description.Contains(queryParams.Search, StringComparison.OrdinalIgnoreCase);
             }
 
-            // Entity-ni DTO-ya çeviririk
+            // sorting
+            Func<IQueryable<TodoTask>, IQueryable<TodoTask>> orderByExpression = query =>
+            {
+                var isDesc = queryParams.SortOrder.Equals("desc", StringComparison.OrdinalIgnoreCase);
+
+                return queryParams.SortBy?.ToLower() switch
+                {
+                    "title" => isDesc ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title),
+                    "duedate" => isDesc ? query.OrderByDescending(t => t.DueDate) : query.OrderBy(t => t.DueDate),
+                    _ => isDesc ? query.OrderByDescending(t => t.CreatedAt) : query.OrderBy(t => t.CreatedAt) // Standart olaraq yaranma tarixinə görə
+                };
+            };
+
+            // Repository-dən paged datanın çəkilməsi
+            var tasks = await _taskRepository.GetAllPagedAsync(
+                filter: filter,
+                includeProperties: "Category",
+                orderBy: orderByExpression,
+                pageNumber: queryParams.PageNumber,
+                pageSize: queryParams.PageSize
+            );
+
+            // DTO-ya çevrilmə
             return tasks.Select(t => new TodoTaskDto(
                 t.Id,
                 t.Title,
@@ -38,7 +59,6 @@ namespace TaskTracker.Services
                 t.Category?.Name ?? "Kateqoriyasız"
             ));
         }
-
         public async Task<TodoTaskDto?> GetTaskByIdAsync(int id)
         {
             var task = await _taskRepository.GetAsync(t => t.Id == id, includeProperties: "Category");

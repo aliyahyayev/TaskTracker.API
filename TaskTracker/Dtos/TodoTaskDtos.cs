@@ -43,4 +43,12 @@ namespace TaskTracker.Dtos
         [Required(ErrorMessage = "Kateqoriya ID mütləqdir.")]
         int CategoryId
     );
+
+    public record TaskQueryParams(
+    string? Search = null,
+    string? SortBy = null,       // "title", "duedate" və ya "createdat"
+    string SortOrder = "asc",    // "asc" və ya "desc"
+    int PageNumber = 1, //nece sehifeden baslasin
+    int PageSize = 10 //sehifedeki elementlerin sayi
+);
 }
