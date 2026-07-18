@@ -23,7 +23,7 @@ namespace TaskTracker.Controllers
             return Ok(tasks);
         }
 
-        // GET: api/tasks/5 (ID-yə görə tək task gətirmək)
+        // Get: api/tasks/5 (ID-yə görə tək task gətirmək)
         [HttpGet("{id:int}")]
         public async Task<ActionResult<TodoTaskDto>> GetById(int id)
         {
