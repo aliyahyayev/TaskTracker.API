@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY ["TaskTracker.API/TaskTracker.API.csproj", "TaskTracker.API/"]
+COPY ["TaskTracker/TaskTracker.API.csproj", "TaskTracker/"]
 COPY ["TaskTracker.Tests/TaskTracker.Tests.csproj", "TaskTracker.Tests/"]
 
 RUN dotnet restore "TaskTracker.API/TaskTracker.API.csproj"
